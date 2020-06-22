@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:todolistapp/presentation/edit/edit_page.dart';
 import 'package:todolistapp/presentation/main/main_model.dart';
 
 void main() {
@@ -49,25 +50,75 @@ class ToDoListApp extends StatelessWidget {
                 ],
               ),
             ),
+            floatingActionButton: FloatingActionButton(
+              child: Icon(Icons.add),
+              onPressed: () {},
+            ),
             body: Consumer<MainModel>(builder: (context, model, child) {
+//              today
               final todayLists = model.todayLists;
               final todayListTiles = todayLists
-                  .map((list) => ListTile(
-                        title: Text(list.title),
+                  .map((todayList) => ListTile(
+                        title: Text(todayList.title),
+                        trailing: IconButton(
+                          icon: Icon(Icons.details),
+                          onPressed: () async {
+                            await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => EditPage(
+                                  todayList: todayList,
+                                ),
+                                fullscreenDialog: true,
+                              ),
+                            );
+                            model.fetchListTiles();
+                          },
+                        ),
                       ))
                   .toList();
-
+//              everyday
               final everydayLists = model.everydayLists;
               final everydayListTiles = everydayLists
-                  .map((list) => ListTile(
-                        title: Text(list.title),
+                  .map((everydayList) => ListTile(
+                        title: Text(everydayList.title),
+                        trailing: IconButton(
+                          icon: Icon(Icons.details),
+                          onPressed: () async {
+                            await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => EditPage(
+                                  everydayList: everydayList,
+                                ),
+                                fullscreenDialog: true,
+                              ),
+                            );
+                            model.fetchListTiles();
+                          },
+                        ),
                       ))
                   .toList();
-
+//              oneDay
               final oneDayLists = model.oneDayLists;
               final oneDayListTiles = oneDayLists
-                  .map((list) => ListTile(
-                        title: Text(list.title),
+                  .map((oneDayList) => ListTile(
+                        title: Text(oneDayList.title),
+                        trailing: IconButton(
+                          icon: Icon(Icons.details),
+                          onPressed: () async {
+                            await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => EditPage(
+                                  oneDayList: oneDayList,
+                                ),
+                                fullscreenDialog: true,
+                              ),
+                            );
+                            model.fetchListTiles();
+                          },
+                        ),
                       ))
                   .toList();
               return Center(
