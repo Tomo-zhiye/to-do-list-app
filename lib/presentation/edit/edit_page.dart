@@ -5,10 +5,11 @@ import 'package:todolistapp/domain/to_do_list_model.dart';
 import 'package:todolistapp/presentation/edit/edit_model.dart';
 
 class EditPage extends StatelessWidget {
-  EditPage({this.todayList, this.everydayList, this.oneDayList});
+  EditPage({this.todayList, this.everydayList, this.oneDayList, this.tabIndex});
   final ToDoListModel todayList;
   final ToDoListModel everydayList;
   final ToDoListModel oneDayList;
+  final tabIndex;
 
   @override
   Widget build(BuildContext context) {
@@ -99,6 +100,7 @@ class EditPage extends StatelessWidget {
                 RaisedButton(
                   child: Text('OK'),
                   onPressed: () async {
+//                    update
                     if (todayList != null) {
                       await model.updateTodayList(todayList);
                     }
@@ -107,6 +109,26 @@ class EditPage extends StatelessWidget {
                     }
                     if (oneDayList != null) {
                       await model.updateOneDayList(oneDayList);
+                    }
+//                    add
+                    switch (tabIndex) {
+                      case 0:
+                        {
+                          await model.addTodayList();
+                        }
+                        break;
+
+                      case 1:
+                        {
+                          await model.addEveryDayList();
+                        }
+                        break;
+
+                      case 2:
+                        {
+                          await model.addOneDayList();
+                        }
+                        break;
                     }
                     Navigator.of(context).pop();
                   },

@@ -28,4 +28,26 @@ class MainModel extends ChangeNotifier {
     this.oneDayLists = oneDayLists;
     notifyListeners();
   }
+
+//  delete
+  Future deleteTodayList(ToDoListModel toDoListModel) async {
+    await Firestore.instance
+        .collection('today')
+        .document(toDoListModel.documentID)
+        .delete();
+  }
+
+  Future deleteEverydayList(ToDoListModel toDoListModel) async {
+    await Firestore.instance
+        .collection('everyday')
+        .document(toDoListModel.documentID)
+        .delete();
+  }
+
+  Future deleteOneDayList(ToDoListModel toDoListModel) async {
+    await Firestore.instance
+        .collection('oneDay')
+        .document(toDoListModel.documentID)
+        .delete();
+  }
 }

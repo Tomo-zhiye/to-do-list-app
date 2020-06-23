@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:todolistapp/domain/to_do_list_model.dart';
 import 'package:todolistapp/presentation/edit/edit_page.dart';
 import 'package:todolistapp/presentation/main/main_model.dart';
 
@@ -8,6 +9,7 @@ void main() {
 }
 
 class ToDoListApp extends StatelessWidget {
+  TabScope _tabScope = TabScope.getInstance();
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -15,10 +17,12 @@ class ToDoListApp extends StatelessWidget {
         create: (_) => MainModel()..fetchListTiles(),
         child: DefaultTabController(
           length: 3,
+          initialIndex: _tabScope.tabIndex,
           child: Scaffold(
             appBar: AppBar(
               title: Text('To-Do List'),
               bottom: TabBar(
+                onTap: (index) => _tabScope.setTabIndex(index),
                 tabs: [
                   Tab(
                     child: Text(
@@ -50,10 +54,25 @@ class ToDoListApp extends StatelessWidget {
                 ],
               ),
             ),
-            floatingActionButton: FloatingActionButton(
-              child: Icon(Icons.add),
-              onPressed: () {},
-            ),
+            floatingActionButton:
+                Consumer<MainModel>(builder: (context, model, child) {
+              return FloatingActionButton(
+                child: Icon(Icons.add),
+                onPressed: () async {
+                  final tabIndex = _tabScope.tabIndex;
+                  await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      fullscreenDialog: true,
+                      builder: (context) => EditPage(
+                        tabIndex: tabIndex,
+                      ),
+                    ),
+                  );
+                  model.fetchListTiles();
+                },
+              );
+            }),
             body: Consumer<MainModel>(builder: (context, model, child) {
 //              today
               final todayLists = model.todayLists;
@@ -75,6 +94,27 @@ class ToDoListApp extends StatelessWidget {
                             model.fetchListTiles();
                           },
                         ),
+                        onLongPress: () async {
+                          await showDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return AlertDialog(
+                                title: Text(
+                                    'Are you sure? this is ${todayList.title}.'),
+                                actions: <Widget>[
+                                  FlatButton(
+                                    child: Text('OK'),
+                                    onPressed: () async {
+                                      Navigator.of(context).pop();
+                                      await deletList(
+                                          model, context, todayList);
+                                    },
+                                  ),
+                                ],
+                              );
+                            },
+                          );
+                        },
                       ))
                   .toList();
 //              everyday
@@ -97,6 +137,26 @@ class ToDoListApp extends StatelessWidget {
                             model.fetchListTiles();
                           },
                         ),
+                        onLongPress: () async {
+                          await showDialog(
+                              context: context,
+                              builder: (BuildContext context) {
+                                return AlertDialog(
+                                  title: Text(
+                                      'Are you sure? this is ${everydayList.title}.'),
+                                  actions: <Widget>[
+                                    FlatButton(
+                                      child: Text('OK'),
+                                      onPressed: () async {
+                                        Navigator.of(context).pop();
+                                        await deletList(
+                                            model, context, everydayList);
+                                      },
+                                    ),
+                                  ],
+                                );
+                              });
+                        },
                       ))
                   .toList();
 //              oneDay
@@ -119,6 +179,27 @@ class ToDoListApp extends StatelessWidget {
                             model.fetchListTiles();
                           },
                         ),
+                        onLongPress: () async {
+                          print(_tabScope.tabIndex);
+                          await showDialog(
+                              context: context,
+                              builder: (BuildContext context) {
+                                return AlertDialog(
+                                  title: Text(
+                                      'Are you sure? this is ${oneDayList.title}.'),
+                                  actions: <Widget>[
+                                    FlatButton(
+                                      child: Text('OK'),
+                                      onPressed: () async {
+                                        Navigator.of(context).pop();
+                                        await deletList(
+                                            model, context, oneDayList);
+                                      },
+                                    )
+                                  ],
+                                );
+                              });
+                        },
                       ))
                   .toList();
               return Center(
@@ -160,5 +241,68 @@ class ToDoListApp extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Future deletList(MainModel model, BuildContext context,
+      ToDoListModel toDoListModel) async {
+    try {
+      switch (_tabScope.tabIndex) {
+        case 0:
+          {
+            await model.deleteTodayList(toDoListModel);
+          }
+          break;
+
+        case 1:
+          {
+            await model.deleteEverydayList(toDoListModel);
+          }
+          break;
+
+        case 2:
+          {
+            await model.deleteOneDayList(toDoListModel);
+          }
+          break;
+      }
+      await model.fetchListTiles();
+    } catch (e) {
+      await _showDialog(context, e.String());
+    }
+  }
+
+  Future _showDialog(BuildContext context, String title) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(title),
+          actions: <Widget>[
+            FlatButton(
+              child: Text('OK'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class TabScope {
+  // singleton class
+  static TabScope _tabScope;
+  int tabIndex = 0;
+
+  static TabScope getInstance() {
+    if (_tabScope == null) _tabScope = TabScope();
+
+    return _tabScope;
+  }
+
+  void setTabIndex(int index) {
+    tabIndex = index;
   }
 }
